@@ -1,0 +1,154 @@
+/* body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+} */
+/* Global variables */
+:root {
+  --color-bg-primary: #202020;
+  --color-bg-secondary: #191919;
+  --color-primary: #2BDE6A;
+  --color-secondary: #B91D82;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+  background: var(--color-bg-primary);
+}
+
+/* Anchors (mainly hyperlinks) */
+a {
+  font-family: sans-serif;
+  text-decoration: none;
+  color: white;
+  word-break: break-all;
+}
+
+/* Image displays */
+.media-object {
+  border-radius: 50%;
+}
+
+/* Boxed elements */
+.box {
+  width: 400px;
+  padding: 40px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--color-bg-secondary);
+  text-align: center;
+  border-radius: 24px;
+  color: white;
+  word-break: break-all;
+}
+
+/* Description lists */
+dl {
+  width: 100%;
+  overflow: hidden;
+  background: var(--color-bg-secondary);
+  padding: 0;
+  margin: 0;
+  margin-top: 50px;
+}
+dt {
+  float: left;
+  width: 25%;
+  background: var(--color-bg-secondary);
+  padding: 0;
+  margin: 0px;
+}
+dd {
+  float: left;
+  width: 75%;
+  background: var(--color-bg-secondary);
+  padding: 0;
+  margin: 0
+}
+
+/* Boxed headings */
+.box h1 {
+  color: white;
+  font-weight: 500;
+  margin-bottom: 40px;
+}
+.box h2 {
+  padding-top: 40px;
+  color: white;
+  font-weight: 250;
+}
+
+.box ul {
+  padding-top: 5px;
+  margin-left: 60px;
+  padding: auto;
+  text-align: left;
+  color: white;
+  font-weight: 175;
+}
+
+/* Forms */
+.box input[type = "text"], .box input[type = "password"] {
+  border: 0;
+  background: none;
+  display: block;
+  margin: 20px auto;
+  text-align: center;
+  border: 2px solid var(--color-primary);
+  padding: 14px 10px;
+  width: 200px;
+  outline: none;
+  color: white;
+  border-radius: 24px;
+  transition: 0.25s;
+}
+.box input[type = "text"]:focus, .box input[type = "password"]:focus {
+  width: 280px;
+  border-color: var(--color-secondary);
+}
+
+/* Username autofill background */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active{
+  -webkit-box-shadow: 0 0 0 30px var(--color-bg-secondary) inset !important;
+}
+
+/* Username autofill text */
+input:-webkit-autofill{
+  -webkit-text-fill-color: white !important;
+}
+
+/* Buttons */
+.box input[type = "submit"], .custom-btn {
+  border: 0;
+  background: none;
+  display: block;
+  margin: 20px auto;
+  text-align: center;
+  border: 2px solid var(--color-secondary);
+  padding: 14px 10px;
+  margin-top: 30px;
+  width: 200px;
+  outline: none;
+  color: white;
+  border-radius: 24px;
+  transition: 0.25s;
+  cursor: pointer;
+}
+.box input[type = "submit"]:hover, .custom-btn:hover {
+  background: var(--color-secondary);
+}
