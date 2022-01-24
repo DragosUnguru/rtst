@@ -8,6 +8,7 @@ const ss = require("socket.io-stream");
 const Sox = require("sox-stream");
 const MemoryStream = require("memory-stream");
 const Duplex = require("stream").Duplex;
+const axios = require("axios");
 
 let DEEPSPEECH_MODEL = __dirname + "/deepspeech-0.9.3-models"; // path to deepspeech english model directory
 
@@ -94,10 +95,12 @@ function processFromFile(audioFile, callback) {
     audioStream.on("finish", () => {
         let audioBuffer = audioStream.toBuffer();
 
-        
         const audioLength = (audioBuffer.length / 2) * (1 / desiredSampleRate);
         console.log("audio length", audioLength);
-        const res = {text: englishModel.stt(audioBuffer), audioLength: audioLength};
+        const res = {
+            text: englishModel.stt(audioBuffer),
+            audioLength: audioLength,
+        };
 
         callback(res);
     });
@@ -250,6 +253,39 @@ function feedAudioContent(chunk) {
     modelStream.feedAudioContent(chunk);
 }
 
+function audioFileRequest(binaryFile, callback) {
+    const headers = {
+        "Content-Type": "audio/wav",
+        Authorization: "Bearer UCHKIA5UN7MPQRGXWFLFVOLEC5H6HVFZ",
+    };
+    axios
+        .post("https://api.wit.ai/speech", binaryFile, {
+            headers: headers,
+        })
+        .then((res) => {
+            let det = JSON.stringify(res.data);
+            det = det.replace(/\\n/g, "");
+            det = det.replace(/\\/g, "");
+            let finalText = det.substring(
+                det.lastIndexOf('"text":') + 7,
+                det.lastIndexOf('"traits"')
+            );
+            finalText = finalText.substring(
+                finalText.indexOf('"'),
+                finalText.lastIndexOf('"') + 1
+            );
+            console.log(`final: ${finalText}`);
+
+            const result = {
+                text: finalText,
+            };
+            callback(result);
+        })
+        .catch((error) => {
+            console.error(error);
+        });
+}
+
 const app = http.createServer(function (req, res) {
     res.writeHead(200);
     res.write("web-microphone-websocket");
@@ -293,6 +329,20 @@ io.on("connection", function (socket) {
         stream.on("end", function () {
             var buf = Buffer.concat(bufs);
             processFromFile(buf, (results) => {
+                socket.emit("recognize", results);
+            });
+        });
+    });
+
+    ss(socket).on("witAIFile", function (stream) {
+        console.log("wit ai");
+        var bufs = [];
+        stream.on("data", function (d) {
+            bufs.push(d);
+        });
+        stream.on("end", function () {
+            var buf = Buffer.concat(bufs);
+            audioFileRequest(bufferToStream(buf), (results) => {
                 socket.emit("recognize", results);
             });
         });

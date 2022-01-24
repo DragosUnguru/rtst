@@ -90,7 +90,8 @@ dd {
     font-weight: 250;
 }
 
-.box ul {
+.box ul,
+.box input[type="checkbox"] {
     padding-top: 5px;
     margin-left: 60px;
     padding: auto;
@@ -136,7 +137,7 @@ input:-webkit-autofill {
 
 /* Buttons */
 .file-input::-webkit-file-upload-button {
-    visibility: hidden;
+    display: none;
 }
 
 .box input[type="submit"],
@@ -157,8 +158,16 @@ input:-webkit-autofill {
     transition: 0.25s;
     cursor: pointer;
 }
+.file-input {
+    text-align-last: center;
+}
 .box input[type="submit"]:hover,
 .custom-btn:hover,
 .box input[type="file"] {
     background: var(--color-secondary);
+}
+
+.webSpeechApi,
+.witAIApi {
+    padding: 0px 50px 25px 0px;
 }

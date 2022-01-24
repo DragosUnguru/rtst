@@ -15,12 +15,30 @@ class App extends Component {
             recordingTime: 0,
             recognitionOutput: [],
             btnText: "Start recording",
+            webSpeechAPI: false,
+            witAIAPI: false,
         };
+        this.SpeechRecognition =
+            window.SpeechRecognition || window.webkitSpeechRecognition;
+        this.recognition = new this.SpeechRecognition();
+        this.recognition.addEventListener("result", this.onResult);
+        this.recognition.continuous = true;
+        this.recognitionCount = 0;
     }
 
-    componentDidMount() {
-        let recognitionCount = 0;
+    onResult = (event) => {
+        const res = event.results[event.results.length - 1];
+        const { recognitionOutput } = this.state;
+        const resjson = {
+            id: this.recognitionCount++,
+            text: res[0].transcript,
+        };
+        recognitionOutput.unshift(resjson);
+        this.setState({ recognitionOutput });
+        console.log(res);
+    };
 
+    componentDidMount() {
         this.socket = io.connect("http://localhost:4000", {});
 
         this.socket.on("connect", () => {
@@ -37,7 +55,7 @@ class App extends Component {
         this.socket.on("recognize", (results) => {
             console.log("recognized:", results);
             const { recognitionOutput } = this.state;
-            results.id = recognitionCount++;
+            results.id = this.recognitionCount++;
             recognitionOutput.unshift(results);
             this.setState({ recognitionOutput });
         });
@@ -51,12 +69,28 @@ class App extends Component {
                     <button class="custom-btn" onClick={this.manageButton}>
                         {this.state.btnText}
                     </button>
+                    <div class="webSpeechApi">
+                        <input
+                            type="checkbox"
+                            id="webSpeechApi"
+                            onChange={this.manageWebSpeechApi}
+                        />
+                        <label for="webSpeechApi">Use Web Speech API</label>
+                    </div>
                     <input
                         type="file"
                         class="file-input"
                         accept=".wav"
                         onChange={this.processFile}
                     ></input>
+                    <div class="witAIApi">
+                        <input
+                            type="checkbox"
+                            id="witAIApi"
+                            onChange={this.manageWitAIApi}
+                        />
+                        <label for="witAIApi">Use Wit Ai API</label>
+                    </div>
 
                     {this.renderTime()}
                     {this.renderRecognitionOutput()}
@@ -64,6 +98,18 @@ class App extends Component {
             </div>
         );
     }
+
+    manageWebSpeechApi = (_e) => {
+        this.setState((prevState) => ({
+            webSpeechAPI: !prevState.webSpeechAPI,
+        }));
+    };
+
+    manageWitAIApi = (_e) => {
+        this.setState((prevState) => ({
+            witAIAPI: !prevState.witAIAPI,
+        }));
+    };
 
     renderTime() {
         return (
@@ -120,24 +166,40 @@ class App extends Component {
     }
 
     startRecording() {
-        if (!this.state.recording) {
+        if (!this.state.webSpeechAPI) {
+            if (!this.state.recording) {
+                this.recordingInterval = setInterval(() => {
+                    let recordingTime =
+                        new Date().getTime() - this.state.recordingStart;
+                    this.setState({ recordingTime });
+                }, 100);
+
+                this.setState(
+                    {
+                        recording: true,
+                        recordingStart: new Date().getTime(),
+                        recordingTime: 0,
+                        btnText: "Stop recording",
+                    },
+                    () => {
+                        this.startMicrophone();
+                    }
+                );
+            }
+        } else {
+            this.recognition.start();
             this.recordingInterval = setInterval(() => {
                 let recordingTime =
                     new Date().getTime() - this.state.recordingStart;
                 this.setState({ recordingTime });
             }, 100);
-
-            this.setState(
-                {
-                    recording: true,
-                    recordingStart: new Date().getTime(),
-                    recordingTime: 0,
-                    btnText: "Stop recording",
-                },
-                () => {
-                    this.startMicrophone();
-                }
-            );
+            this.setState({
+                recording: true,
+                recordingStart: new Date().getTime(),
+                recordingTime: 0,
+                btnText: "Stop recording",
+            });
+            console.log("started web speech api");
         }
     }
 
@@ -181,47 +243,51 @@ class App extends Component {
     }
 
     stopRecording() {
-        if (this.state.recording) {
-            if (this.socket.connected) {
-                this.socket.emit("stream-reset");
-            }
-            clearInterval(this.recordingInterval);
-            this.setState(
-                {
-                    btnText: "Start recording",
-                    recording: false,
-                },
-                () => {
-                    this.stopMicrophone();
+        if (!this.state.webSpeechAPI) {
+            if (this.state.recording) {
+                if (this.socket.connected) {
+                    this.socket.emit("stream-reset");
                 }
-            );
+                clearInterval(this.recordingInterval);
+                this.setState(
+                    {
+                        btnText: "Start recording",
+                        recording: false,
+                    },
+                    () => {
+                        this.stopMicrophone();
+                    }
+                );
+            }
+        } else {
+            this.recognition.stop();
+            clearInterval(this.recordingInterval);
+            this.setState({
+                recording: false,
+                btnText: "Start recording",
+            });
+            console.log("stopped recording web speech api");
         }
     }
 
     processFile = (e) => {
-        if (this.socket.connected) {
-            // this.socket.emit("process-file", e.taget.files[0].name);
-            // ss(this.socket).on("process-file", function (stream) {
-            //     stream.pipe(fs.createWriteStream(filename));
-            // });
+        if (!this.state.witAIAPI) {
+            if (this.socket.connected) {
+                var file = e.target.files[0];
+                var stream = ss.createStream();
 
-            // var stream = ss.createStream();
-            // stream.on("end", function () {
-            //     console.log("file sent");
-            // });
-
+                // upload a file to the server.
+                ss(this.socket).emit("file", stream, { size: file.size });
+                ss.createBlobReadStream(file).pipe(stream);
+            }
+        } else {
             var file = e.target.files[0];
             var stream = ss.createStream();
 
+            console.log("wit ai");
             // upload a file to the server.
-            ss(this.socket).emit("file", stream, { size: file.size });
+            ss(this.socket).emit("witAIFile", stream, { size: file.size });
             ss.createBlobReadStream(file).pipe(stream);
-
-            // ss(this.socket).emit(
-            //     "sending",
-            //     fs.createReadStream(e.taget.files[0].name)
-            // );
-            // .pipe(stream);
         }
     };
 
