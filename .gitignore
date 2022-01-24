@@ -25,3 +25,5 @@ yarn-debug.log*
 yarn-error.log*
 
 deepspeech-0.9.3-models*
+
+audio/*
