@@ -69,28 +69,28 @@ class App extends Component {
                     <button class="custom-btn" onClick={this.manageButton}>
                         {this.state.btnText}
                     </button>
-                    <div class="webSpeechApi">
+                    {/* <div class="webSpeechApi">
                         <input
                             type="checkbox"
                             id="webSpeechApi"
                             onChange={this.manageWebSpeechApi}
                         />
                         <label for="webSpeechApi">Use Web Speech API</label>
-                    </div>
+                    </div> */}
                     <input
                         type="file"
                         class="file-input"
                         accept=".wav"
                         onChange={this.processFile}
                     ></input>
-                    <div class="witAIApi">
+                    {/* <div class="witAIApi">
                         <input
                             type="checkbox"
                             id="witAIApi"
                             onChange={this.manageWitAIApi}
                         />
                         <label for="witAIApi">Use Wit Ai API</label>
-                    </div>
+                    </div> */}
 
                     {this.renderTime()}
                     {this.renderRecognitionOutput()}
